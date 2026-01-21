@@ -26,7 +26,7 @@ if "messages" not in st.session_state:
 
 if "booking_state" not in st.session_state:
     st.session_state.booking_state = {
-        "booking_active": False,
+        "active": False,
         "data": {},
         "current_field": None
     }
