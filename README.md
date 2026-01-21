@@ -27,7 +27,7 @@ https://ai-booking-assistant-rag.streamlit.app/
 
 ### 🔒 4. Admin Dashboard
 
-- **Secure Panel:** A password-protected dashboard (`admin123`) for business owners to view, manage, and track all customer bookings.
+- **Secure Panel:** A password-protected dashboard for business owners to view, manage, and track all customer bookings.
 
 ### 🎨 5. Responsive UI
 
