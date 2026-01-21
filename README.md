@@ -1,43 +1,68 @@
 # 🌿 NeoStats AI Booking Assistant
 
-An intelligent, hybrid AI assistant designed to handle service bookings and answer questions from uploaded documents (RAG). Built for the **AI Engineer Assessment**.
+**NeoStats** is an intelligent, hybrid AI assistant designed to streamline service bookings. It combines **RAG (Retrieval-Augmented Generation)** for document-based queries and **Real-Time Web Search** (via Google) to find and book services dynamically.
 
 ## 🚀 Live Demo
 
-**[Insert Your Streamlit Cloud Link Here]** _(e.g., https://neostats-booking.streamlit.app)_
+https://ai-booking-assistant-rag.streamlit.app/
 
 ---
 
-## 📋 Features
+## 🌟 Key Features
 
-- **Hybrid Intent Detection:** Smartly distinguishes between general questions (RAG) and booking requests.
-- **RAG Pipeline:** Upload PDF documents (e.g., service policies, job descriptions) and ask questions about them.
-- **Conversational Booking:** Multi-turn dialogue to collect Name, Email, Phone, Date, and Time.
-- **Validation:** Regex-based validation for Email, Phone, and Dates (rejects past dates/invalid formats).
-- **Admin Dashboard:** Password-protected panel (`admin123`) to view and manage bookings.
-- **Email Integration:** Sends real confirmation emails using SMTP.
-- **NeoStats Branding:** Custom Green theme with Dark/Light mode support.
+### 🧠 1. Hybrid Intelligence
+
+- **Document Expert (RAG):** Upload a PDF (e.g., Rate Card, Hotel Brochure, Job Description), and the bot answers questions strictly from that document.
+- **Web Agent (Google Search):** If no document is uploaded, the bot searches the live web (using Serper API) to find real-world services, hotels, salons, or doctors with prices and ratings.
+
+### 📅 2. Smart Booking System
+
+- **Intent Detection:** Automatically detects when a user wants to book (e.g., _"I want to book a haircut"_).
+- **Data Collection:** Conversational flow to collect Name, Email, Phone, Date, and Time.
+- **Dynamic Services:** Can book specific services extracted from a PDF or generic services found on the web.
+
+### 📧 3. Automated Notifications
+
+- **Email Confirmation:** Sends a real-time HTML email confirmation to the user immediately after booking.
+
+### 🔒 4. Admin Dashboard
+
+- **Secure Panel:** A password-protected dashboard (`admin123`) for business owners to view, manage, and track all customer bookings.
+
+### 🎨 5. Responsive UI
+
+- **Mobile-Optimized:** Custom CSS ensures perfect visibility on both Desktop and Mobile (Light/Dark modes).
 
 ---
 
-## 🛠️ Project Structure
+## 🛠️ Tech Stack
+
+- **Frontend:** [Streamlit](https://streamlit.io/)
+- **LLM:** Llama 3.1-8b (via [Groq API](https://groq.com/))
+- **Search Engine:** Google Search API (via [Serper.dev](https://serper.dev/))
+- **Vector Store:** FAISS & HuggingFace Embeddings (`all-MiniLM-L6-v2`)
+- **Database:** SQLite (Lightweight, local storage)
+- **Tools:** LangChain, Python `requests`, `smtplib`
+
+---
+
+## 📂 Project Structure
 
 ```text
-project_root/
+neostats-booking-bot/
 ├── app/
-│   ├── main.py              # Application Entry Point & UI
-│   ├── chat_logic.py        # Intent Router (Booking vs RAG)
-│   ├── rag_pipeline.py      # PDF Processing & Hybrid Logic
-│   ├── booking_flow.py      # State Machine for Slot Filling
-│   ├── admin_dashboard.py   # Protected Admin Interface
-│   ├── config.py            # Configuration & Constants
-│   └── tools.py             # Email & Utility Functions
+│   ├── main.py              # 🚀 Entry Point (UI & Navigation)
+│   ├── chat_logic.py        # 🧠 Brain: Routes queries (RAG vs Search vs Booking)
+│   ├── rag_pipeline.py      # 📄 PDF Processing & Vector Search
+│   ├── booking_flow.py      # 💬 Conversation State Machine for Booking
+│   ├── tools.py             # 🛠️ Tools: Google Search & Email Sender
+│   ├── admin_dashboard.py   # 🔒 Admin Panel UI
+│   └── config.py            # ⚙️ Constants & Configuration
 ├── db/
-│   ├── database.py          # SQLite Connection Manager
-│   └── models.py            # Data Classes
+│   ├── database.py          # 💾 SQLite Connection & Queries
+│   └── bookings.db          # (Created automatically)
 ├── .streamlit/
-│   └── secrets.toml         # API Keys (Not uploaded to GitHub)
-├── requirements.txt         # Project Dependencies
-└── README.md                # Documentation
-
+│   └── secrets.toml         # 🔑 API Keys (DO NOT COMMIT THIS)
+├── requirements.txt         # 📦 Project Dependencies
+└── README.md                # 📖 This file
 ```
