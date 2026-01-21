@@ -39,4 +39,5 @@ project_root/
 │   └── secrets.toml         # API Keys (Not uploaded to GitHub)
 ├── requirements.txt         # Project Dependencies
 └── README.md                # Documentation
+
 ```

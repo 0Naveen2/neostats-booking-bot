@@ -1,46 +1,42 @@
 import streamlit as st
 from app.rag_pipeline import get_rag_response
 from app.booking_flow import handle_booking_conversation
+from app.tools import search_web_for_services
 
 def route_query(user_input, vectorstore):
     state = st.session_state.booking_state
     user_text = user_input.lower()
 
-    # --- 1. IF ALREADY IN BOOKING FLOW ---
-    if state.get("booking_active"):
+    # 1. BOOKING FLOW (Priority)
+    if state.get("active"):
         return handle_booking_conversation(user_input)
 
-    # --- 2. INTENT CONFIRMATION ---
+    # 2. CONFIRMATION HANDLING
     if state.get("awaiting_intent_confirmation"):
-        if any(w in user_text for w in ["yes", "sure", "ok", "confirm", "yeah", "please"]):
-            state["booking_active"] = True
+        if any(w in user_text for w in ["yes", "sure", "ok", "confirm", "proceed"]):
+            state["active"] = True
             state["awaiting_intent_confirmation"] = False
             return handle_booking_conversation("START_FLOW") 
         else:
             state["awaiting_intent_confirmation"] = False
-            return "Okay, I've cancelled that. What else can I help with?"
+            return "Okay, cancelled. What else can I help with?"
 
-    # --- 3. DETECT NEW BOOKING INTENT (SMARTER) ---
-    booking_keywords = ["book", "schedule", "reserve", "appointment"]
+    # 3. WEB SEARCH TRIGGER (Broadened)
+    # Now triggers for ANY search request, not just hotels.
+    search_keywords = ["search", "find", "show", "list", "available", "near me", "suggest", "looking for"]
     
-    # ❌ IGNORE questions like "how to book", "explain booking", "what is booking"
-    informational_triggers = ["how", "explain", "what", "process", "workflow", "can you"]
-    
-    is_booking_keyword_present = any(k in user_text for k in booking_keywords)
-    is_informational_question = any(q in user_text for q in informational_triggers)
+    # Check if user wants to search
+    if any(k in user_text for k in search_keywords):
+        # We assume if they say "search" or "find", they want real data.
+        with st.spinner(f"Searching Google for '{user_input}'..."):
+            results = search_web_for_services(user_input)
+        return f"🔎 **Here are the results:**\n\n{results}\n\n*To book one, just say 'I want to book [Name]'.*"
 
-    # Only trigger booking if it has a keyword AND it's NOT just asking "how"
-    # Exception: "Can you book" is a request, but "How can you book" is a question.
-    # We use a simple heuristic: if it says "book" but also "explain", it's likely RAG.
-    
-    if is_booking_keyword_present and not is_informational_question:
+    # 4. BOOKING INTENT
+    # Triggers if they say "book" without a prior search
+    if "book" in user_text or "appointment" in user_text or "reservation" in user_text:
         state["awaiting_intent_confirmation"] = True
-        return "It sounds like you want to make a booking. Would you like to proceed? (Yes/No)"
-    
-    # Explicit exception for "I want to book" (which contains 'what' sometimes in longer sentences, but we catch specific intent)
-    if "i want to book" in user_text or "can you book" in user_text:
-        state["awaiting_intent_confirmation"] = True
-        return "It sounds like you want to make a booking. Would you like to proceed? (Yes/No)"
+        return "It sounds like you want to make a booking. Shall we proceed? (Yes/No)"
 
-    # --- 4. GENERAL QUESTIONS / RAG ---
+    # 5. GENERAL CHAT / PDF RAG
     return get_rag_response(user_input, vectorstore)

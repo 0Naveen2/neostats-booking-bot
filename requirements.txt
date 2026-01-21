@@ -1,10 +1,12 @@
-# File 1
 streamlit
 langchain
+langchain-community
 langchain-groq
 langchain-huggingface
-langchain-community
-sentence-transformers
 faiss-cpu
 pypdf
 pandas
+groq
+sentence-transformers
+duckduckgo-search>=6.0.0
+requests
