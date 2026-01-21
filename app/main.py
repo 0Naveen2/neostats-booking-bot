@@ -65,9 +65,17 @@ st.markdown(f"""
     background-color: #FFFFFF;
 }}
 
-.stChatMessage p {{
+/* FORCE VISIBILITY FOR ALL CHAT CONTENT */
+.stChatMessage,
+.stChatMessage * ,
+.stChatMessage ul,
+.stChatMessage li,
+.stChatMessage span {{
     color: #000000 !important;
+    opacity: 1 !important;
 }}
+
+
 
 .stChatInputContainer {{
     position: fixed;
