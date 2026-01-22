@@ -3,7 +3,22 @@ from app.rag_pipeline import get_rag_response
 from app.booking_flow import handle_booking_conversation
 from app.tools import search_web_for_services
 
-def route_query(user_input, vectorstore):
+def build_chat_context(chat_history, limit=20):
+    """
+    Builds short conversational memory for the LLM.
+    Keeps last N messages to avoid token explosion.
+    """
+    history = chat_history[-limit:]
+    context = ""
+
+    for msg in history:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        context += f"{role}: {msg['content']}\n"
+
+    return context
+
+
+def route_query(user_input, vectorstore, chat_history):
     state = st.session_state.booking_state
     user_text = user_input.lower()
 
@@ -18,25 +33,33 @@ def route_query(user_input, vectorstore):
             state["awaiting_intent_confirmation"] = False
             return handle_booking_conversation("START_FLOW") 
         else:
-            state["awaiting_intent_confirmation"] = False
-            return "Okay, cancelled. What else can I help with?"
+            return get_rag_response(user_input, vectorstore)
+            # state["awaiting_intent_confirmation"] = False
+            # return "Okay, cancelled. What else can I help with?"
 
-    # 3. WEB SEARCH TRIGGER (Broadened)
-    # Now triggers for ANY search request, not just hotels.
+    # 3. WEB SEARCH
     search_keywords = ["search", "find", "show", "list", "available", "near me", "suggest", "looking for"]
-    
-    # Check if user wants to search
     if any(k in user_text for k in search_keywords):
-        # We assume if they say "search" or "find", they want real data.
         with st.spinner(f"Searching Google for '{user_input}'..."):
             results = search_web_for_services(user_input)
         return f"🔎 **Here are the results:**\n\n{results}\n\n*To book one, just say 'I want to book [Name]'.*"
 
     # 4. BOOKING INTENT
-    # Triggers if they say "book" without a prior search
-    if "book" in user_text or "appointment" in user_text or "reservation" in user_text:
+    if any(k in user_text for k in ["book", "appointment", "reservation"]):
         state["awaiting_intent_confirmation"] = True
         return "It sounds like you want to make a booking. Shall we proceed? (Yes/No)"
 
-    # 5. GENERAL CHAT / PDF RAG
-    return get_rag_response(user_input, vectorstore)
+    # 5. GENERAL CHAT / PDF RAG (WITH MEMORY)
+    context = build_chat_context(chat_history)
+
+    final_query = f"""
+You are NeoStats Assistant.
+Use the conversation history to answer naturally.
+
+Conversation so far:
+{context}
+
+User: {user_input}
+Assistant:
+"""
+    return get_rag_response(final_query, vectorstore)

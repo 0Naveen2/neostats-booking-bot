@@ -38,61 +38,54 @@ if "page" not in st.session_state:
     st.session_state.page = "chat"
 
 # ---------------- SIMPLE CSS ----------------
-st.markdown(f"""
+st.markdown("""
 <style>
-.stApp {{
-    background-color: #F7F9FB;
-}}
 
-[data-testid="stSidebar"] {{
-    background-color: {BRAND_COLOR};
-}}
+/* ===============================
+   BULLETPROOF FILE UPLOADER FIX
+   =============================== */
 
-[data-testid="stSidebar"] * {{
-    color: white !important;
-}}
+[data-testid="stFileUploader"] {
+    background-color: #FFFFFF !important;
+    border: 2px dashed #2F6B3F !important;
+    border-radius: 14px !important;
+    padding: 16px !important;
+}
 
-.stChatMessage {{
-    border-radius: 12px;
-    padding: 12px;
-}}
-
-.stChatMessage[data-testid="stChatMessage-user"] {{
-    background-color: #E6F4EA;
-}}
-
-.stChatMessage[data-testid="stChatMessage-assistant"] {{
-    background-color: #FFFFFF;
-}}
-
-/* FORCE VISIBILITY FOR ALL CHAT CONTENT */
-.stChatMessage,
-.stChatMessage * ,
-.stChatMessage ul,
-.stChatMessage li,
-.stChatMessage span {{
+/* FORCE VISIBILITY OF ALL CHILD ELEMENTS */
+[data-testid="stFileUploader"] * {
     color: #000000 !important;
     opacity: 1 !important;
-}}
+    filter: none !important;
+    visibility: visible !important;
+}
 
+/* INNER DROP ZONE */
+[data-testid="stFileUploader"] section {
+    background-color: #F5F7F9 !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+}
 
+/* BROWSE FILES BUTTON */
+[data-testid="stFileUploader"] button {
+    background-color: #2F6B3F !important;
+    color: #FFFFFF !important;
+    border-radius: 8px !important;
+    border: none !important;
+}
 
-.stChatInputContainer {{
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: white;
-    border-top: 1px solid #ddd;
-}}
+/* MOBILE SAFETY */
+@media (max-width: 768px) {
+    [data-testid="stFileUploader"] {
+        min-height: 130px !important;
+    }
+}
 
-.stButton > button {{
-    background-color: {BRAND_COLOR};
-    color: white;
-    border-radius: 8px;
-}}
 </style>
 """, unsafe_allow_html=True)
+
+
 
 # ---------------- SIDEBAR ----------------
 with st.sidebar:
@@ -107,15 +100,20 @@ with st.sidebar:
     if st.button("🔒 Admin", use_container_width=True):
         st.session_state.page = "admin"
         st.rerun()
-
-    st.divider()
-
-    if st.session_state.page == "chat":
-        uploaded_file = st.file_uploader("Upload Service PDF", type="pdf")
-        if uploaded_file and not st.session_state.vectorstore:
+    
+    # Only one file uploader
+    uploaded_file = st.file_uploader("Upload Service PDF", type="pdf")
+    if uploaded_file:
+        if not st.session_state.get("vectorstore"):
             with st.spinner("Processing PDF..."):
                 st.session_state.vectorstore = process_pdf(uploaded_file)
                 st.success("PDF Loaded")
+    else:
+        # PDF removed → clear all PDF-related memory
+        st.session_state.vectorstore = None
+        st.session_state.detected_services = []
+
+    st.divider()
 
 # ---------------- ROUTING ----------------
 if st.session_state.page == "admin":
@@ -136,7 +134,7 @@ else:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            response = route_query(prompt, st.session_state.vectorstore)
+            response = route_query(prompt,st.session_state.vectorstore,st.session_state.messages)
             st.markdown(response)
 
         st.session_state.messages.append({"role": "assistant", "content": response})
