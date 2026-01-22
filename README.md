@@ -4,7 +4,7 @@
 
 ## 🚀 Live Demo
 
-https://ai-booking-assistant-rag.streamlit.app/
+https://booking-bot-neostats.streamlit.app/
 
 ---
 
