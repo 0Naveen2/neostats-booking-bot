@@ -19,7 +19,7 @@ def render_admin_dashboard():
 
     if not st.session_state.admin_authenticated:
         st.warning("🔒 Restricted Access")
-        password = st.text_input("Enter Admin Password", type="password")
+        password = st.text_input("Enter Admin Password", type="password")                           
         
         if st.button("Login"):
             # CHECK AGAINST SECURE CONFIG, NOT HARDCODED STRING
