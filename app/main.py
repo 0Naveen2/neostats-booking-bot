@@ -21,7 +21,7 @@ init_db()
 if "messages" not in st.session_state:
     st.session_state.messages = [{
         "role": "assistant",
-        "content": "Welcome to **NeoStats**. How can I help you today?"
+        "content": "👋 **Welcome to NeoStats.**\n\nI am your AI Booking Assistant. You can:\n1. **Upload a PDF** to ask questions or book services found in it.\n2. **Search** for services (like hotels or doctors) if you don't have a file.\n\nHow can I help you today?"
     }]
 
 if "booking_state" not in st.session_state:
